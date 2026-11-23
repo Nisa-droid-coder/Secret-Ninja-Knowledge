@@ -80,8 +80,7 @@
     .flipbook-stage:fullscreen { width: 100vw; height: 100vh; left: 0; transform: none; border-radius: 0; display: flex; flex-direction: column; justify-content: center; }
     .flipbook-stage:-webkit-full-screen { width: 100vw; height: 100vh; left: 0; transform: none; border-radius: 0; display: flex; flex-direction: column; justify-content: center; }
     .stage-area { display: flex; justify-content: center; align-items: center; overflow: hidden; padding: 16px 0 22px; }
-    .stage-area.is-zoomed { overflow: auto; -webkit-overflow-scrolling: touch; justify-content: flex-start; align-items: flex-start; padding: 24px; }
-    .book-zoom { transition: transform 0.4s ease; transform-origin: top left; }
+    .book-zoom { transition: transform 0.4s ease; }
     .book-zoom.zoomed { transform: scale(1.35); }
 
     .book {
@@ -111,16 +110,6 @@
         repeating-linear-gradient(0deg, rgba(150,120,80,0.018) 0 1px, transparent 1px 3px), #fdf8ee;
       box-shadow: inset 0 0 0 1px rgba(120, 90, 60, 0.12), 0 0 14px rgba(0, 0, 0, 0.18);
     }
-    /* On mobile single-page view, flatten 3D transform on the active page so iOS/Android can scroll cleanly */
-    .single .leaf:not(.flipped) {
-      transform: none !important;
-      transform-style: flat;
-    }
-    .single .leaf:not(.flipped) .face.front {
-      backface-visibility: visible;
-      -webkit-backface-visibility: visible;
-    }
-
     .face.front { border-radius: 2px 10px 10px 2px; }
     .face.back { transform: rotateY(180deg); border-radius: 10px 2px 2px 10px; }
     /* spine gutter shadow + outer page curl hint */
@@ -130,31 +119,18 @@
 
     .pg {
       position: absolute; inset: 0; padding: 2.2em 1.5em 2.6em 2.3em;
-      display: flex; flex-direction: column; font-size: 1em;
+      display: flex; flex-direction: column; font-size: 1em; overflow: hidden;
     }
     .face.back .pg { padding: 2.2em 2.3em 2.6em 1.5em; }
     .pg-no { position: absolute; bottom: 0.9em; font-size: 0.7em; color: var(--muted); letter-spacing: 0.08em; z-index: 2; }
     .face.front .pg-no { right: 2em; }
     .face.back .pg-no { left: 2em; }
 
-    /* Scrollable content area inside each page */
-    .pg-scroll {
-      position: relative;
-      z-index: 5;
-      flex: 1 1 auto;
-      height: 0;
-      min-height: 0;
-      overflow-y: scroll;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior-y: contain;
-      touch-action: pan-y;
-      padding-right: 0.5em;
-      padding-bottom: 1.2em;
-      scrollbar-width: thin;
-      scrollbar-color: #c7b29e transparent;
+    /* Non-scrolling fitted page content */
+    .pg-content {
+      flex: 1; min-height: 0; overflow: hidden;
+      display: flex; flex-direction: column;
     }
-    .pg-scroll::-webkit-scrollbar { width: 5px; }
-    .pg-scroll::-webkit-scrollbar-thumb { background: rgba(125, 107, 96, 0.45); border-radius: 999px; }
 
     /* Cover & back cover */
     .pg.cover {
@@ -185,6 +161,7 @@
     /* Entry page */
     .page-meta-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 0.7em; font-size: 0.72em; color: var(--muted); flex-shrink: 0; }
     .page-counter { font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--rose); }
+    .cont-badge { font-style: italic; color: var(--sage); font-weight: 600; }
     .page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 0.6em; flex-shrink: 0; }
     .author-line { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5em; }
     .author-name { font-weight: 700; font-size: 0.85em; }
@@ -193,9 +170,9 @@
     .icon-action { border: 1px solid var(--border); background: #faf5ef; color: var(--ink); font-family: "Plus Jakarta Sans", sans-serif; font-size: 0.68em; font-weight: 600; padding: 0.35em 0.8em; border-radius: 10px; cursor: pointer; transition: background 0.15s, color 0.15s; }
     .icon-action:hover { background: var(--blush); color: var(--rose-dark); }
     .icon-action.delete:hover { background: #fdeceb; color: #b83b32; }
-    .page-title { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.7em; font-weight: 700; line-height: 1.15; margin-bottom: 0.4em; }
+    .page-title { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.7em; font-weight: 700; line-height: 1.15; margin-bottom: 0.4em; flex-shrink: 0; }
     .page-photo {
-      display: block; width: calc(100% - 0.6em); margin: 0.3em 0.3em 1em; max-height: 14em; object-fit: cover;
+      display: block; width: calc(100% - 0.6em); margin: 0.3em 0.3em 0.9em; max-height: 12.5em; object-fit: cover; flex-shrink: 0;
       padding: 0.4em; background: #fff; border: 1px solid #e8ddcc; border-radius: 2px; transform: rotate(-0.8deg);
       box-shadow: 0 6px 14px rgba(47, 36, 31, 0.18), 0 1px 2px rgba(47, 36, 31, 0.2);
     }
@@ -204,7 +181,6 @@
       white-space: pre-wrap; color: #3b2f29;
       background-image: linear-gradient(to bottom, transparent calc(1.7em - 1px), rgba(110,140,170,0.22) calc(1.7em - 1px));
       background-size: 100% 1.7em;
-      user-select: text; -webkit-user-select: text;
     }
     .empty-book { text-align: center; padding: 60px 16px; color: #e8d9c8; width: 100%; }
     .empty-book h3 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.6rem; margin-bottom: 6px; }
@@ -221,11 +197,14 @@
     .dots { min-width: 120px; text-align: center; font-size: 0.8rem; font-weight: 600; color: #e8d9c8; letter-spacing: 0.04em; }
     .hint-text { text-align: center; font-size: 0.74rem; color: #b9a595; margin-top: 10px; }
 
+    /* Hidden measurement sandbox to auto-paginate long entries without overflow */
+    #measureBox {
+      position: fixed; left: -99999px; top: 0; visibility: hidden; pointer-events: none; z-index: -10;
+    }
+
     @media (max-width: 600px) {
       header h1 { font-size: 1.85rem; }
       .row { grid-template-columns: 1fr; }
-      .pg { padding: 1.6em 1.1em 2.2em 1.4em; }
-      .face.back .pg { padding: 1.6em 1.4em 2.2em 1.1em; }
       .flip-btn { height: 36px; padding: 0 11px; font-size: 0.84rem; }
     }
   </style>
@@ -331,11 +310,13 @@
           <button type="button" class="flip-btn" id="fsBtn" title="Fullscreen">&#x26F6;</button>
         </div>
         <div class="hint-text" id="flipHint" style="display: none;">
-          Tip: Scroll up/down inside a page to read long stories; swipe left/right or tap edges to flip
+          Tip: Drag a page, tap its edge, swipe on your phone, or use &larr; / &rarr; arrow keys to flip
         </div>
       </section>
     </div>
   </div>
+
+  <div id="measureBox" aria-hidden="true"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -408,22 +389,26 @@
     const zoomBtn = document.getElementById("zoomBtn");
     const fsBtn = document.getElementById("fsBtn");
     const flipHint = document.getElementById("flipHint");
+    const measureBox = document.getElementById("measureBox");
 
     const savedAuthor = localStorage.getItem("diary_author_name");
     if (savedAuthor) authorInput.value = savedAuthor;
 
+    // entries: newest-first from Firestore; orderedEntries: oldest-first so latest is at the back
     let entries = [];
+    let orderedEntries = [];
     let editingId = null;
     let unsubscribeEntries = null;
+    let jumpToLatestOnNextRender = false;
 
     let newImageBase64 = null;
     let existingImageBase64 = null;
     let photoRemovedInEdit = false;
 
     // Flipbook state
-    let pages = [];
-    let leaves = [];
-    let turned = 0;
+    let pages = [];       // [{t:'cover'|'intro'|'entry'|'blank'|'back', entry, entryIdx, text, part, totalParts, showPhoto}]
+    let leaves = [];      // leaf DOM elements
+    let turned = 0;       // number of leaves already flipped (0 = closed cover)
     let maxT = 0;
     let isDouble = true;
     let pw = 360;
@@ -486,6 +471,8 @@
             id: docSnap.id,
             ...docSnap.data()
           }));
+          // Put latest entry at the back of the book
+          orderedEntries = [...entries].reverse();
           renderFlipbook();
         },
         (err) => {
@@ -517,6 +504,7 @@
           unsubscribeEntries = null;
         }
         entries = [];
+        orderedEntries = [];
         turned = 0;
         diaryApp.classList.add("hidden");
         authCard.classList.remove("hidden");
@@ -694,7 +682,7 @@
             imageBase64: finalImageBase64,
             createdAt: serverTimestamp()
           });
-          turned = pageToTurned(2);
+          jumpToLatestOnNextRender = true;
         }
 
         resetFormState();
@@ -708,15 +696,117 @@
       }
     });
 
-    /* ================= FLIPBOOK ENGINE ================= */
+    /* ================= FLIPBOOK & AUTO-PAGINATION ENGINE ================= */
 
     function pageToTurned(p) {
       return isDouble ? Math.ceil(p / 2) : p;
     }
 
-    function buildPages() {
+    // Measure and split a single entry into as many non-scrolling pages as needed
+    function paginateEntry(entry, entryIdx, bookW, bookH, fontSizePx) {
+      const padV = fontSizePx * 4.8;
+      const padH = fontSizePx * 3.8;
+      const innerW = Math.max(120, bookW - padH);
+      const innerH = Math.max(120, bookH - padV);
+
+      measureBox.style.width = innerW + "px";
+      measureBox.style.height = innerH + "px";
+      measureBox.style.fontSize = fontSizePx + "px";
+
+      const hasPhoto = isSafeImageDataUrl(entry.imageBase64);
+      const fullText = entry.content || "";
+
+      function fits(htmlText, includePhoto, includeTitle) {
+        measureBox.innerHTML = `
+          <div style="display:flex;flex-direction:column;height:100%;overflow:hidden;">
+            <div class="page-meta-top"><span class="page-counter">Page ${entryIdx + 1}</span><span>Date</span></div>
+            <div class="page-header"><div class="author-line"><span class="author-name">${escapeHtml(entry.authorName || "")}</span></div></div>
+            ${includeTitle && entry.title ? `<h2 class="page-title">${escapeHtml(entry.title)}</h2>` : ""}
+            ${includePhoto && hasPhoto ? `<img class="page-photo" src="${entry.imageBase64}" alt="" />` : ""}
+            <div class="page-body" style="flex:1;min-height:0;overflow:hidden;">${htmlText}</div>
+          </div>
+        `;
+        const bodyEl = measureBox.querySelector(".page-body");
+        if (!bodyEl) return false;
+        return bodyEl.scrollHeight <= bodyEl.clientHeight + 1;
+      }
+
+      const chunks = [];
+      let remaining = fullText;
+      let partIndex = 0;
+
+      // Handle empty or short text first
+      if (!remaining.length) {
+        chunks.push({ text: "", showPhoto: hasPhoto, showTitle: !!entry.title });
+      } else {
+        while (remaining.length > 0) {
+          const showPhoto = hasPhoto && partIndex === 0;
+          const showTitle = !!entry.title && partIndex === 0;
+
+          if (fits(escapeHtml(remaining), showPhoto, showTitle)) {
+            chunks.push({ text: remaining, showPhoto, showTitle });
+            remaining = "";
+            break;
+          }
+
+          // Binary search max character slice that fits without overflowing
+          let lo = 1;
+          let hi = remaining.length;
+          let best = 1;
+
+          while (lo <= hi) {
+            const mid = Math.floor((lo + hi) / 2);
+            if (fits(escapeHtml(remaining.slice(0, mid)), showPhoto, showTitle)) {
+              best = mid;
+              lo = mid + 1;
+            } else {
+              hi = mid - 1;
+            }
+          }
+
+          // Try to break cleanly at a space or newline if reasonable
+          let cut = best;
+          if (cut < remaining.length) {
+            const spaceIdx = remaining.lastIndexOf(" ", cut);
+            const nlIdx = remaining.lastIndexOf("\n", cut);
+            const cleanBreak = Math.max(spaceIdx, nlIdx);
+            if (cleanBreak > Math.floor(best * 0.6)) {
+              cut = cleanBreak + 1;
+            }
+          }
+
+          chunks.push({
+            text: remaining.slice(0, cut).trimEnd(),
+            showPhoto,
+            showTitle
+          });
+          remaining = remaining.slice(cut).trimStart();
+          partIndex++;
+          if (partIndex > 30) {
+            chunks.push({ text: remaining, showPhoto: false, showTitle: false });
+            break;
+          }
+        }
+      }
+
+      return chunks.map((c, idx) => ({
+        t: "entry",
+        entry,
+        entryIdx,
+        text: c.text,
+        part: idx + 1,
+        totalParts: chunks.length,
+        showPhoto: c.showPhoto,
+        showTitle: c.showTitle
+      }));
+    }
+
+    function buildPages(bookW, bookH, fontSizePx) {
       pages = [{ t: "cover" }, { t: "intro" }];
-      entries.forEach((_, i) => pages.push({ t: "entry", i }));
+      orderedEntries.forEach((entry, i) => {
+        const entryPages = paginateEntry(entry, i, bookW, bookH, fontSizePx);
+        entryPages.forEach((ep) => pages.push(ep));
+      });
       if (isDouble && pages.length % 2 === 0) pages.push({ t: "blank" });
       pages.push({ t: "back" });
     }
@@ -731,7 +821,7 @@
             <div class="cv-title">Dear Us</div>
             <div class="cv-sub">A Little Flipbook Diary</div>
             <div class="cv-line"></div>
-            <div class="cv-count">${entries.length} ${entries.length === 1 ? "memory" : "memories"} kept inside</div>
+            <div class="cv-count">${orderedEntries.length} ${orderedEntries.length === 1 ? "memory" : "memories"} kept inside</div>
             <div class="cv-hint">Tap or swipe to open &rarr;</div>
           </div>`;
       }
@@ -741,28 +831,28 @@
             <div class="cv-orn">&#10086;</div>
             <div class="cv-title" style="font-size:2.4em">To be continued</div>
             <div class="cv-line"></div>
-            <div class="cv-sub">More pages of us, soon.</div>
+            <div class="cv-sub">Latest memories &amp; more ahead.</div>
           </div>`;
       }
       if (p.t === "intro") {
-        const latest = entries[0];
+        const latest = entries[0]; // newest entry from desc query
         let latestStat = "";
         if (latest) {
           const d = latest.createdAt && typeof latest.createdAt.toDate === "function"
             ? latest.createdAt.toDate().toLocaleDateString([], { dateStyle: "medium" })
             : "just now";
-          latestStat = `<span class="stat">Last page: ${escapeHtml(latest.authorName || "Someone")}, ${escapeHtml(d)}</span>`;
+          latestStat = `<span class="stat">Latest at back: ${escapeHtml(latest.authorName || "Someone")}, ${escapeHtml(d)}</span>`;
         }
-        const startBtn = entries.length
+        const startBtn = orderedEntries.length
           ? `<button type="button" class="start-btn" data-action="start">Start reading &rarr;</button>`
           : `<p style="font-size:0.95em">A blank page awaits. Tap <strong>+ Write Page</strong> above to add your first memory.</p>`;
         return `
           <div class="pg intro">
             <div class="orn">&#10086;</div>
             <h2>Welcome</h2>
-            <p>This little book holds the days we wanted to keep: a few words, a photo, a feeling. Turn the page to wander through them, or add a new one whenever your heart says so.</p>
+            <p>This little book holds the days we wanted to keep: oldest moments first, with your newest pages waiting toward the back.</p>
             <div class="stats">
-              <span class="stat">${entries.length} ${entries.length === 1 ? "page" : "pages"} written</span>
+              <span class="stat">${orderedEntries.length} ${orderedEntries.length === 1 ? "entry" : "entries"}</span>
               ${latestStat}
             </div>
             ${startBtn}
@@ -770,18 +860,19 @@
           </div>`;
       }
       if (p.t === "entry") {
-        const entry = entries[p.i];
+        const entry = p.entry;
         if (!entry) return "";
         const dateObj = entry.createdAt && typeof entry.createdAt.toDate === "function" ? entry.createdAt.toDate() : null;
         const dateStr = dateObj ? dateObj.toLocaleString([], { dateStyle: "medium", timeStyle: "short" }) : "Just now";
         const editedTag = entry.updatedAt ? ` &bull; edited` : "";
-        const safePhoto = isSafeImageDataUrl(entry.imageBase64)
+        const contLabel = p.totalParts > 1 ? ` <span class="cont-badge">(${p.part}/${p.totalParts})</span>` : "";
+        const safePhoto = p.showPhoto && isSafeImageDataUrl(entry.imageBase64)
           ? `<img class="page-photo" src="${entry.imageBase64}" alt="Diary page memory" loading="lazy" draggable="false" />`
           : "";
         return `
           <div class="pg">
             <div class="page-meta-top">
-              <span class="page-counter">Page ${p.i + 1} of ${entries.length}</span>
+              <span class="page-counter">Entry ${p.entryIdx + 1} of ${orderedEntries.length}${contLabel}</span>
               <span>${dateStr}${editedTag}</span>
             </div>
             <div class="page-header">
@@ -794,10 +885,10 @@
                 <button type="button" class="icon-action delete" data-action="delete" data-id="${escapeHtml(entry.id)}">Delete</button>
               </div>
             </div>
-            <div class="pg-scroll">
-              ${entry.title ? `<h2 class="page-title">${escapeHtml(entry.title)}</h2>` : ""}
+            <div class="pg-content">
+              ${p.showTitle ? `<h2 class="page-title">${escapeHtml(entry.title)}</h2>` : ""}
               ${safePhoto}
-              <div class="page-body">${escapeHtml(entry.content || "")}</div>
+              <div class="page-body">${escapeHtml(p.text || "")}</div>
             </div>
             ${no}
           </div>`;
@@ -814,28 +905,38 @@
       if (flipbookSection.classList.contains("hidden")) return;
       const fs = !!document.fullscreenElement;
       const availW = Math.max(280, stageArea.clientWidth - 8);
-      const availH = fs ? window.innerHeight - 130 : Math.max(400, Math.min(window.innerHeight - 210, 740));
+      const availH = fs ? window.innerHeight - 130 : Math.max(380, Math.min(window.innerHeight - 230, 720));
       const wantDouble = availW >= 700;
       if (wantDouble !== isDouble) { isDouble = wantDouble; needsRebuild = true; }
 
-      const ratio = isDouble ? 1.4 : 1.32;
+      const ratio = 1.4;
       pw = isDouble ? Math.min(availW / 2, availH / ratio) : Math.min(availW, availH / ratio);
       pw = Math.floor(pw);
+      const ph = Math.floor(pw * ratio);
+      const fontSizePx = pw / 27;
+
       bookFrame.style.setProperty("--pw", pw + "px");
       bookFrame.style.width = (isDouble ? pw * 2 : pw) + "px";
-      bookFrame.style.height = Math.floor(pw * ratio) + "px";
+      bookFrame.style.height = ph + "px";
       bookFrame.className = "book " + (isDouble ? "double" : "single");
 
-      if (needsRebuild || !leaves.length) buildBook();
+      if (needsRebuild || !leaves.length) buildBook(pw, ph, fontSizePx);
     }
 
-    function buildBook() {
+    function buildBook(pageW, pageH, fontSizePx) {
       needsRebuild = false;
-      buildPages();
+      buildPages(pageW, pageH, fontSizePx);
       bookFrame.innerHTML = "";
       leaves = [];
       const count = isDouble ? pages.length / 2 : pages.length;
       maxT = isDouble ? count : count - 1;
+
+      if (jumpToLatestOnNextRender) {
+        jumpToLatestOnNextRender = false;
+        const lastEntryIdx = pages.map((p, idx) => p.t === "entry" ? idx : -1).filter((idx) => idx >= 0).pop();
+        turned = lastEntryIdx !== undefined ? pageToTurned(lastEntryIdx) : Math.max(0, maxT - 1);
+      }
+
       for (let i = 0; i < count; i++) {
         const leaf = document.createElement("div");
         leaf.className = "leaf";
@@ -926,10 +1027,7 @@
     nextBtn.addEventListener("click", () => go(turned + 1));
     firstBtn.addEventListener("click", () => go(0));
     lastBtn.addEventListener("click", () => go(maxT));
-    zoomBtn.addEventListener("click", () => {
-      const isZoomed = bookZoom.classList.toggle("zoomed");
-      stageArea.classList.toggle("is-zoomed", isZoomed);
-    });
+    zoomBtn.addEventListener("click", () => bookZoom.classList.toggle("zoomed"));
     fsBtn.addEventListener("click", () => {
       if (document.fullscreenElement) document.exitFullscreen();
       else if (flipbookSection.requestFullscreen) flipbookSection.requestFullscreen();
@@ -958,97 +1056,24 @@
       }
     });
 
-    // Direct touch scroll support inside .pg-scroll so 3D/leaf layers never swallow vertical swipes on phones
-    let touchScroll = null;
-    bookFrame.addEventListener("touchstart", (e) => {
-      if (e.touches.length !== 1) return;
-      const scroller = e.target.closest(".pg-scroll");
-      if (!scroller) return;
-      touchScroll = {
-        el: scroller,
-        lastY: e.touches[0].clientY,
-        startX: e.touches[0].clientX,
-        startY: e.touches[0].clientY,
-        lockedVertical: false
-      };
-    }, { passive: true });
-
-    bookFrame.addEventListener("touchmove", (e) => {
-      if (!touchScroll || e.touches.length !== 1) return;
-      const y = e.touches[0].clientY;
-      const x = e.touches[0].clientX;
-      const totalDx = Math.abs(x - touchScroll.startX);
-      const totalDy = Math.abs(y - touchScroll.startY);
-
-      if (!touchScroll.lockedVertical) {
-        if (totalDy > 5 && totalDy >= totalDx) {
-          touchScroll.lockedVertical = true;
-        } else if (totalDx > 14 && totalDx > totalDy * 1.4) {
-          touchScroll = null;
-          return;
-        } else {
-          return;
-        }
-      }
-
-      const deltaY = touchScroll.lastY - y;
-      touchScroll.lastY = y;
-      const el = touchScroll.el;
-      const prevTop = el.scrollTop;
-      el.scrollTop += deltaY;
-      if (el.scrollTop !== prevTop && e.cancelable) {
-        e.preventDefault();
-      }
-    }, { passive: false });
-
-    bookFrame.addEventListener("touchend", () => { touchScroll = null; }, { passive: true });
-    bookFrame.addEventListener("touchcancel", () => { touchScroll = null; }, { passive: true });
-
-    // Drag-to-flip (mouse / pen / horizontal swipe)
+    // Drag-to-flip (mouse, touch, pen), tap edges, corner peek
     bookFrame.addEventListener("pointerdown", (e) => {
-      if (e.pointerType === "touch") return;
       if (!leaves.length || e.target.closest("button")) return;
-      const scroller = e.target.closest(".pg-scroll");
-      const canScroll = scroller && scroller.scrollHeight > scroller.clientHeight + 2;
-      drag = {
-        x: e.clientX,
-        y: e.clientY,
-        moved: false,
-        scrolling: false,
-        canScroll,
-        dir: 0,
-        id: e.pointerId,
-        p: 0
-      };
+      drag = { x: e.clientX, y: e.clientY, moved: false, dir: 0, id: e.pointerId, p: 0 };
     });
 
     window.addEventListener("pointermove", (e) => {
-      if (e.pointerType === "touch") return;
       if (!drag) { handlePeek(e); return; }
-      if (drag.scrolling) return;
-
       const dx = e.clientX - drag.x;
-      const dy = e.clientY - drag.y;
-
       if (!drag.moved) {
-        if (Math.abs(dy) > 6 && Math.abs(dy) >= Math.abs(dx)) {
-          drag.scrolling = true;
-          return;
-        }
-        const horizThreshold = drag.canScroll ? 18 : 10;
-        if (Math.abs(dx) < horizThreshold || Math.abs(dx) < Math.abs(dy) * 1.3) return;
-
+        if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(e.clientY - drag.y)) return;
         drag.dir = dx < 0 ? 1 : -1;
-        if ((drag.dir === 1 && turned >= maxT) || (drag.dir === -1 && turned <= 0)) {
-          drag = null;
-          return;
-        }
+        if ((drag.dir === 1 && turned >= maxT) || (drag.dir === -1 && turned <= 0)) { drag = null; return; }
         drag.moved = true;
         peek = 0;
         bookFrame.classList.add("dragging");
         try { bookFrame.setPointerCapture(drag.id); } catch (_) {}
       }
-
       drag.p = Math.min(1, Math.abs(dx) / (pw * 0.9));
       drag.i = drag.dir === 1 ? turned : turned - 1;
       drag.angle = drag.dir === 1 ? -180 * drag.p : -180 + 180 * drag.p;
@@ -1061,29 +1086,25 @@
       const d = drag;
       drag = null;
       bookFrame.classList.remove("dragging");
-
-      if (d.scrolling) return;
-
       if (d.moved) {
         go(turned + (!cancelled && d.p > 0.25 ? d.dir : 0));
         return;
       }
       if (cancelled || !leaves.length) return;
-
       const r = bookFrame.getBoundingClientRect();
       const xr = (e.clientX - r.left) / r.width;
       if (isDouble) {
         if (turned === 0) { if (xr > 0.5) go(1); }
         else if (turned >= leaves.length) { if (xr < 0.5) go(turned - 1); }
-        else if (xr > 0.82) go(turned + 1);
-        else if (xr < 0.18) go(turned - 1);
+        else if (xr > 0.72) go(turned + 1);
+        else if (xr < 0.28) go(turned - 1);
       } else {
-        if (turned === 0 || xr > 0.82) go(turned + 1);
-        else if (xr < 0.18) go(turned - 1);
+        if (turned === 0 || xr > 0.65) go(turned + 1);
+        else if (xr < 0.35) go(turned - 1);
       }
     }
-    window.addEventListener("pointerup", (e) => { if (e.pointerType !== "touch") endDrag(e, false); });
-    window.addEventListener("pointercancel", (e) => { if (e.pointerType !== "touch") endDrag(e, true); });
+    window.addEventListener("pointerup", (e) => endDrag(e, false));
+    window.addEventListener("pointercancel", (e) => endDrag(e, true));
 
     function handlePeek(e) {
       if (e.pointerType === "touch" || !leaves.length || flipbookSection.classList.contains("hidden")) return;
